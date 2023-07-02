@@ -1,6 +1,5 @@
 const express = require('express');
 const mongoose = require('mongoose');
-
 const bodyParser = require('body-parser');
 const userRouter = require('./routes/users');
 const cardRouter = require('./routes/cards');
@@ -13,8 +12,7 @@ mongoose
   .connect('mongodb://127.0.0.1:27017/mestodb')
   .then(() => {
     app.listen(PORT, () => {
-      console.log(`Сервер запущен!`);
-      console.error('Всё супер гуд запустилось славабогу');
+      console.log(`Сервер запущен, хвала богам!`);
     });
   })
   .catch((error) => {
