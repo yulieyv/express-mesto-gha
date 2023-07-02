@@ -8,7 +8,6 @@ const {
 } = require('../utils/constants');
 
 module.exports.createUser = (req, res) => {
-  console.log(req.body);
   const { name, about, avatar } = req.body;
   User.create({ name, about, avatar })
     .then((user) => {
@@ -37,8 +36,8 @@ module.exports.getUsers = (req, res) => {
 };
 
 module.exports.getUser = (req, res) => {
-  const { id } = req.params;
-  User.findById(id)
+  const { _id } = req.params.userId;
+  User.findById(_id)
     .then((user) => {
       if (!user) {
         res
