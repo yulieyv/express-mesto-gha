@@ -27,17 +27,16 @@ module.exports.createUser = (req, res) => {
 
 module.exports.getUsers = (req, res) => {
   User.find({})
-    .then((users) => res.status(OK_STATUS).send(users))
-    .catch(() =>
-      res
-        .status(INTERNAL_SERVER_ERROR_STATUS)
-        .send({ message: 'Не удалось получить список пользователей' })
-    );
+    .then((users) => {
+      res.status(OK_STATUS).send(users);
+    })
+    .catch(() => {
+      res.status(INTERNAL_SERVER_ERROR_STATUS).send({ message: 'Не удалось получить список пользователей' });
+    });
 };
 
 module.exports.getUser = (req, res) => {
-  const { userId } = req.params;
-  User.findById(userId)
+  User.findById(req.params.userId)
     .then((user) => {
       if (!user) {
         res
@@ -66,7 +65,7 @@ module.exports.updateUserInfo = (req, res) => {
     {
       new: true,
       runValidators: true,
-    }
+    },
   )
     .then((user) => {
       if (!user) {
@@ -97,7 +96,7 @@ module.exports.updateAvatar = (req, res) => {
     {
       runValidators: true,
       new: true,
-    }
+    },
   )
     .then((user) => {
       if (!user) {
