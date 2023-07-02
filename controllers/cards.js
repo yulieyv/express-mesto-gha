@@ -1,12 +1,21 @@
 const Card = require('../models/card');
+const {
+  OK_STATUS,
+  CREATED_STATUS,
+  BAD_REQUEST_STATUS,
+  NOT_FOUND_STATUS,
+  INTERNAL_SERVER_ERROR_STATUS,
+} = require('../utils/constants');
 
 module.exports.getCards = (req, res) => {
   Card.find({})
     .then((cards) => {
-      res.status(200).send(cards);
+      res.status(OK_STATUS).send(cards);
     })
-    .catch((err) => {
-      res.status(500).send({ message: 'Список карточек не получен' });
+    .catch(() => {
+      res
+        .status(INTERNAL_SERVER_ERROR_STATUS)
+        .send({ message: 'Список карточек не получен' });
     });
 };
 
@@ -15,17 +24,17 @@ module.exports.createCard = (req, res) => {
   const owner = req.user._id;
   Card.create({ name, link, owner })
     .then((card) => {
-      res.status(201).send(card);
+      res.status(CREATED_STATUS).send(card);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(400).send({
-          message: `${Object.values(err.errors)
-            .map((error) => error.message)
-            .join(', ')}`,
+        return res.status(BAD_REQUEST_STATUS).send({
+          message: 'Невалидные данные',
         });
       }
-      return res.status(500).send({ message: 'Ошибка при создании карточки' });
+      return res
+        .status(INTERNAL_SERVER_ERROR_STATUS)
+        .send({ message: 'Ошибка при создании карточки' });
     });
 };
 
@@ -33,17 +42,23 @@ module.exports.deleteCard = (req, res) => {
   Card.findOneAndDelete({ _id: req.params.cardId })
     .then((card) => {
       if (!card) {
-        return res.status(404).send({ message: 'Карточка не найдена' });
+        return res
+          .status(NOT_FOUND_STATUS)
+          .send({ message: 'Карточка не найдена' });
       }
       return res
-        .status(200)
+        .status(OK_STATUS)
         .send({ message: 'Карточка с указанным ID удалена' });
     })
     .catch(() => {
       if (!req.params.cardId.isValid) {
-        res.status(400).send({ message: 'Некорректный ID карточки' });
+        res
+          .status(BAD_REQUEST_STATUS)
+          .send({ message: 'Некорректный ID карточки' });
       } else {
-        res.status(500).send({ message: 'Ошибка при удалении карточки' });
+        res
+          .status(INTERNAL_SERVER_ERROR_STATUS)
+          .send({ message: 'Ошибка при удалении карточки' });
       }
     });
 };
@@ -52,22 +67,22 @@ module.exports.likeCard = (req, res) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } },
-    { new: true },
+    { new: true }
   )
     .then((card) => {
       if (!card) {
         return res
-          .status(404)
+          .status(NOT_FOUND_STATUS)
           .send({ message: 'Карточка с указанным ID не найдена' });
       }
-      return res.status(200).send({ message: 'Лайк добавлен' });
+      return res.status(OK_STATUS).send({ message: 'Лайк добавлен' });
     })
     .catch(() => {
       if (!req.params.cardId.isValid) {
-        res.status(400).send({ message: 'Некорректный ID' });
+        res.status(BAD_REQUEST_STATUS).send({ message: 'Некорректный ID' });
       } else {
         res
-          .status(500)
+          .status(INTERNAL_SERVER_ERROR_STATUS)
           .send({ message: 'Ошибка при постановке лайка карточке' });
       }
     });
@@ -77,21 +92,21 @@ module.exports.dislikeCard = (req, res) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } },
-    { new: true },
+    { new: true }
   )
     .then((card) => {
       if (!card) {
         return res
-          .status(400)
+          .status(BAD_REQUEST_STATUS)
           .send({ message: 'Карточка с указанным ID не найдена' });
       }
-      return res.status(200).send({ message: 'Лайк удалён' });
+      return res.status(OK_STATUS).send({ message: 'Лайк удалён' });
     })
     .catch((err) => {
       if (!req.params.cardId.isValid) {
-        res.status(400).send({ message: 'Некорректный ID' });
+        res.status(BAD_REQUEST_STATUS).send({ message: 'Некорректный ID' });
       } else {
-        res.status(500).send({ message: err.message });
+        res.status(INTERNAL_SERVER_ERROR_STATUS).send({ message: err.message });
       }
     });
 };

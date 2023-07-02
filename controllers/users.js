@@ -1,112 +1,120 @@
 const User = require('../models/user');
-
-module.exports.getUsers = (req, res) => {
-  User.find({})
-    .then((users) => {
-      res.status(200).send(users);
-    })
-    .catch(() => {
-      res
-        .status(500)
-        .send({ message: 'Не удалось получить список пользователей' });
-    });
-};
-
-module.exports.getUserById = (req, res) => {
-  User.findById({ _id: req.params.userId })
-    .then((user) => {
-      if (!user) {
-        res.status(404).send({ message: 'Id пользователя не найден' });
-        return;
-      }
-      res.status(200).send(user);
-    })
-    .catch(() => {
-      if (!req.params.userId.isValid) {
-        res.status('400').send({ message: 'Incorrect Id number' });
-      } else {
-        res
-          .status(500)
-          .send({ message: 'Ошибка получения данных пользователя' });
-      }
-    });
-};
+const {
+  OK_STATUS,
+  CREATED_STATUS,
+  BAD_REQUEST_STATUS,
+  NOT_FOUND_STATUS,
+  INTERNAL_SERVER_ERROR_STATUS,
+} = require('../utils/constants');
 
 module.exports.createUser = (req, res) => {
   const { name, about, avatar } = req.body;
   User.create({ name, about, avatar })
     .then((user) => {
-      res.status('201').send({
-        name: user.name,
-        about: user.about,
-        avatar: user.avatar,
-      });
+      res.status(CREATED_STATUS).send(user);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status('400').send({
-          message: `${Object.values(err.errors)
-            .map((item) => item.message)
-            .join(', ')}`,
+        return res.status(BAD_REQUEST_STATUS).send({
+          message: 'Невалидные данные',
         });
+      }
+      return res
+        .status(INTERNAL_SERVER_ERROR_STATUS)
+        .send({ message: 'Ошибка при создании пользователя' });
+    });
+};
+
+module.exports.getUsers = (req, res) => {
+  User.find({})
+    .then((users) => res.status(OK_STATUS).send(users))
+    .catch(() =>
+      res
+        .status(INTERNAL_SERVER_ERROR_STATUS)
+        .send({ message: 'Не удалось получить список пользователей' })
+    );
+};
+
+module.exports.getUser = (req, res) => {
+  User.findById({ _id: req.params.userId })
+    .then((user) => {
+      if (!user) {
+        res
+          .status(NOT_FOUND_STATUS)
+          .send({ message: 'Id пользователя не найден' });
+        return;
+      }
+      res.status(OK_STATUS).send(user);
+    })
+    .catch(() => {
+      if (!req.params.userId.isValid) {
+        res.status('BAD_REQUEST_STATUS').send({ message: 'Некорректный ID' });
       } else {
-        res.status(500).send({ message: 'Ошибка при создании пользователя' });
+        res
+          .status(INTERNAL_SERVER_ERROR_STATUS)
+          .send({ message: 'Ошибка получения данных пользователя' });
       }
     });
 };
 
 module.exports.updateUserInfo = (req, res) => {
-  User.findByIdAndUpdate(req.user._id, req.body, {
-    new: true,
-    runValidators: true,
-  })
+  const { name, about } = req.body;
+  User.findByIdAndUpdate(
+    req.user._id,
+    { name, about },
+    {
+      new: true,
+      runValidators: true,
+    }
+  )
     .then((user) => {
       if (!user) {
         res
-          .status(404)
+          .status(NOT_FOUND_STATUS)
           .send({ message: 'Информация о пользователе не найдена' });
         return;
       }
-      res.status(200).send(user);
+      res.status(OK_STATUS).send(user);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(400).send({
-          message: `${Object.values(err.errors)
-            .map((error) => error.message)
-            .join('. ')}`,
+        return res.status(BAD_REQUEST_STATUS).send({
+          message: 'Невалидные данные',
         });
       }
       return res
-        .status(500)
+        .status(INTERNAL_SERVER_ERROR_STATUS)
         .send({ message: 'Ошибка обновления данных пользователя' });
     });
 };
 
 module.exports.updateAvatar = (req, res) => {
-  User.findByIdAndUpdate(req.user._id, req.body, {
-    runValidators: true,
-    new: true,
-  })
+  const { avatar } = req.body;
+  User.findByIdAndUpdate(
+    req.user._id,
+    { avatar },
+    {
+      runValidators: true,
+      new: true,
+    }
+  )
     .then((user) => {
       if (!user) {
         res
-          .status(404)
+          .status(NOT_FOUND_STATUS)
           .send({ message: 'Пользователь по указанному ID не найден' });
         return;
       }
-      res.status(200).send(user);
+      res.status(OK_STATUS).send(user);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status('400').send({
-          message: `${Object.values(err.errors)
-            .map((error) => error.message)
-            .join('. ')}`,
+        return res.status(BAD_REQUEST_STATUS).send({
+          message: 'Невалидные данные',
         });
       }
       return res
-        .status(500)
+        .status(INTERNAL_SERVER_ERROR_STATUS)
         .send({ message: 'Ошибка обновления аватара пользователя' });
     });
 };
