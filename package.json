@@ -14,14 +14,13 @@
     "url": "git+https://github.com/yulieyv/express-mesto-gha.git"
   },
   "keywords": [],
-  "author": "",
+  "author": "Yulia Yamalieva",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/yulieyv/express-mesto-gha/issues"
   },
   "homepage": "https://github.com/yulieyv/express-mesto-gha#readme",
   "dependencies": {
-    "body-parser": "^1.20.2",
     "express": "^4.18.2",
     "mongoose": "^7.3.1"
   },
@@ -29,7 +28,6 @@
     "eslint": "^8.44.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.27.5",
-    "gh-pages": "^5.0.0",
     "nodemon": "^2.0.22"
   }
 }

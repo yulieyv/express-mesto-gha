@@ -1,12 +1,11 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
-const userRouter = require('./routes/users');
-const cardRouter = require('./routes/cards');
-const { NOT_FOUND_STATUS } = require('./utils/constants');
+const router = require('./routes/index');
 
 const { PORT = 3000 } = process.env;
 const app = express();
+
+mongoose.connect('mongodb://127.0.0.1:27017/mestodb');
 
 app.use((req, res, next) => {
   req.user = {
@@ -14,17 +13,9 @@ app.use((req, res, next) => {
   };
   next();
 });
-app.use(bodyParser.json());
-app.use('/users', userRouter);
-app.use('/cards', cardRouter);
-app.use('*', (req, res) => {
-  res
-    .status(NOT_FOUND_STATUS)
-    .send({ message: 'Неверный URL запроса' });
-});
-
-mongoose.connect('mongodb://127.0.0.1:27017/mestodb');
+app.use(express.json());
+app.use(router);
 
 app.listen(PORT, () => {
-  console.log('Сервер запущен, хвала богам!');
+  console.log('Сервер запущен!');
 });

@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Card = require('../models/card');
 const {
   OK_STATUS,
@@ -26,8 +27,8 @@ module.exports.createCard = (req, res) => {
     .then((card) => {
       res.status(CREATED_STATUS).send(card);
     })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
+    .catch((error) => {
+      if (error instanceof mongoose.Error.ValidationError) {
         return res.status(BAD_REQUEST_STATUS).send({
           message: 'Невалидные данные',
         });
@@ -50,8 +51,8 @@ module.exports.deleteCard = (req, res) => {
         .status(OK_STATUS)
         .send({ message: 'Карточка с указанным ID удалена' });
     })
-    .catch((err) => {
-      if (err.name === 'CastError') {
+    .catch((error) => {
+      if (error instanceof mongoose.Error.CastError) {
         res
           .status(BAD_REQUEST_STATUS)
           .send({ message: 'Некорректный ID карточки' });
@@ -77,8 +78,8 @@ module.exports.likeCard = (req, res) => {
       }
       return res.status(OK_STATUS).send({ message: 'Лайк добавлен' });
     })
-    .catch((err) => {
-      if (err.name === 'ValidationError' || err.name === 'CastError') {
+    .catch((error) => {
+      if (error instanceof mongoose.Error.CastError) {
         res.status(BAD_REQUEST_STATUS).send({ message: 'Некорректный ID' });
       } else {
         res
@@ -102,11 +103,13 @@ module.exports.dislikeCard = (req, res) => {
       }
       return res.status(OK_STATUS).send({ message: 'Лайк удалён' });
     })
-    .catch((err) => {
-      if (err.name === 'ValidationError' || err.name === 'CastError') {
+    .catch((error) => {
+      if (error instanceof mongoose.Error.CastError) {
         res.status(BAD_REQUEST_STATUS).send({ message: 'Некорректный ID' });
       } else {
-        res.status(INTERNAL_SERVER_ERROR_STATUS).send({ message: err.message });
+        res
+          .status(INTERNAL_SERVER_ERROR_STATUS)
+          .send('Ошибка при удалении лайка');
       }
     });
 };

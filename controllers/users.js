@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const User = require('../models/user');
 const {
   OK_STATUS,
@@ -13,8 +14,8 @@ module.exports.createUser = (req, res) => {
     .then((user) => {
       res.status(CREATED_STATUS).send(user);
     })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
+    .catch((error) => {
+      if (error instanceof mongoose.Error.ValidationError) {
         return res.status(BAD_REQUEST_STATUS).send({
           message: 'Невалидные данные',
         });
@@ -48,8 +49,8 @@ module.exports.getUser = (req, res) => {
       }
       res.status(OK_STATUS).send(user);
     })
-    .catch((err) => {
-      if (err.name === 'ValidationError' || err.name === 'CastError') {
+    .catch((error) => {
+      if (error instanceof mongoose.Error.CastError) {
         res.status(BAD_REQUEST_STATUS).send({ message: 'Некорректный ID' });
       } else {
         res
@@ -59,16 +60,8 @@ module.exports.getUser = (req, res) => {
     });
 };
 
-module.exports.updateUserInfo = (req, res) => {
-  const { name, about } = req.body;
-  User.findByIdAndUpdate(
-    req.user._id,
-    { name, about },
-    {
-      new: true,
-      runValidators: true,
-    },
-  )
+const updateUserData = (req, res, config = {}) => {
+  User.findByIdAndUpdate(req.user._id, req.body, config)
     .then((user) => {
       if (!user) {
         res
@@ -78,45 +71,28 @@ module.exports.updateUserInfo = (req, res) => {
       }
       res.status(OK_STATUS).send(user);
     })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
+    .catch((error) => {
+      if (error instanceof mongoose.Error.ValidationError) {
         return res.status(BAD_REQUEST_STATUS).send({
           message: 'Невалидные данные',
         });
       }
       return res
         .status(INTERNAL_SERVER_ERROR_STATUS)
-        .send({ message: 'Ошибка обновления данных пользователя' });
+        .send({ message: 'Ошибка обновления профиля' });
     });
 };
 
+module.exports.updateUserInfo = (req, res) => {
+  updateUserData(req, res, {
+    new: true,
+    runValidators: true,
+  });
+};
+
 module.exports.updateAvatar = (req, res) => {
-  const { avatar } = req.body;
-  User.findByIdAndUpdate(
-    req.user._id,
-    { avatar },
-    {
-      runValidators: true,
-      new: true,
-    },
-  )
-    .then((user) => {
-      if (!user) {
-        res
-          .status(NOT_FOUND_STATUS)
-          .send({ message: 'Пользователь по указанному ID не найден' });
-        return;
-      }
-      res.status(OK_STATUS).send(user);
-    })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        return res.status(BAD_REQUEST_STATUS).send({
-          message: 'Невалидные данные',
-        });
-      }
-      return res
-        .status(INTERNAL_SERVER_ERROR_STATUS)
-        .send({ message: 'Ошибка обновления аватара пользователя' });
-    });
+  updateUserData(req, res, {
+    new: true,
+    runValidators: true,
+  });
 };
