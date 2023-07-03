@@ -31,12 +31,15 @@ module.exports.getUsers = (req, res) => {
       res.status(OK_STATUS).send(users);
     })
     .catch(() => {
-      res.status(INTERNAL_SERVER_ERROR_STATUS).send({ message: 'Не удалось получить список пользователей' });
+      res
+        .status(INTERNAL_SERVER_ERROR_STATUS)
+        .send({ message: 'Не удалось получить список пользователей' });
     });
 };
 
 module.exports.getUser = (req, res) => {
-  User.findById(req.params.userId)
+  const { _id } = req.params.userId;
+  User.findById(_id)
     .then((user) => {
       if (!user) {
         res
