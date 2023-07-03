@@ -38,8 +38,7 @@ module.exports.getUsers = (req, res) => {
 };
 
 module.exports.getUser = (req, res) => {
-  const { _id } = req.params.userId;
-  User.findById(_id)
+  User.findById({ _id: req.params.userId })
     .then((user) => {
       if (!user) {
         res
@@ -50,7 +49,7 @@ module.exports.getUser = (req, res) => {
       res.status(OK_STATUS).send(user);
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'ValidationError' || err.name === 'CastError') {
         res.status(BAD_REQUEST_STATUS).send({ message: 'Некорректный ID' });
       } else {
         res

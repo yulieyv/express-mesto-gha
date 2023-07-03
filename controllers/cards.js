@@ -77,8 +77,8 @@ module.exports.likeCard = (req, res) => {
       }
       return res.status(OK_STATUS).send({ message: 'Лайк добавлен' });
     })
-    .catch(() => {
-      if (!req.params.cardId.isValid) {
+    .catch((err) => {
+      if (err.name === 'ValidationError' || err.name === 'CastError') {
         res.status(BAD_REQUEST_STATUS).send({ message: 'Некорректный ID' });
       } else {
         res
@@ -97,13 +97,13 @@ module.exports.dislikeCard = (req, res) => {
     .then((card) => {
       if (!card) {
         return res
-          .status(BAD_REQUEST_STATUS)
+          .status(NOT_FOUND_STATUS)
           .send({ message: 'Карточка с указанным ID не найдена' });
       }
       return res.status(OK_STATUS).send({ message: 'Лайк удалён' });
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'ValidationError' || err.name === 'CastError') {
         res.status(BAD_REQUEST_STATUS).send({ message: 'Некорректный ID' });
       } else {
         res.status(INTERNAL_SERVER_ERROR_STATUS).send({ message: err.message });
