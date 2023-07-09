@@ -17,22 +17,28 @@ module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
   return User.findUserByCredentials(email, password)
     .then((user) => {
-      const token = jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret');
-      res.cookie('jwt', token, {
-        maxAge: 3600000,
-        httpOnly: true,
-      });
+      const token = jwt.sign(
+        { _id: user._id },
+        NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
+      );
+      res.cookie(
+        'jwt',
+        token,
+        {
+          maxAge: 3600000,
+          httpOnly: true,
+        },
+        { expiresIn: '7d' },
+      );
     })
     .catch((error) => {
       if (error instanceof mongoose.Error.ValidationError) {
-        next(new UnauthorizedError('Неверные логин или пароль'));
+        next(new BadRequestError('Неверные логин или пароль'));
       }
       if (error.code === 11000) {
-        next(
-          new ConflictError('Пользователь с таким email уже зарегистрирован'),
-        );
+        next(new ConflictError('Пользователь с таким email уже зарегистрирован'));
       }
-      next(new InternalServerError('Ошибка авторизации'));
+      next(new UnauthorizedError('Ошибка авторизации'));
     });
 };
 
