@@ -30,7 +30,8 @@ module.exports.login = (req, res, next) => {
             maxAge: 3600000,
             httpOnly: true,
           },
-        );
+        )
+        .send({ message: 'Привет, ты тут' });
     })
     .catch(next);
 };
@@ -63,11 +64,13 @@ module.exports.createUser = (req, res, next) => {
     .catch((error) => {
       if (error instanceof mongoose.Error.ValidationError) {
         next(new BadRequestError('Неверные логин или пароль'));
-      } else if (error.code === 11000) {
-        next(
-          new ConflictError('Пользователь с таким email уже зарегистрирован'),
-        );
-      } else next(error);
+        return;
+      }
+      if (error.code === 11000) {
+        next(new ConflictError('Пользователь с таким email уже зарегистрирован'));
+        return;
+      }
+      next(error);
     });
 };
 
