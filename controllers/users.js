@@ -34,7 +34,15 @@ module.exports.login = (req, res, next) => {
         )
         .send({ message: 'Авторизация прошла успешно' });
     })
-    .catch(() => {
+    .catch((error) => {
+      if (error instanceof mongoose.Error.ValidationError) {
+        next(new BadRequestError('Неверные логин или пароль'));
+      }
+      if (error.code === 11000) {
+        next(
+          new ConflictError('Пользователь с таким email уже зарегистрирован'),
+        );
+      }
       next(new UnauthorizedError('Ошибка авторизации'));
     });
 };
@@ -66,14 +74,9 @@ module.exports.createUser = (req, res, next) => {
     })
     .catch((error) => {
       if (error instanceof mongoose.Error.ValidationError) {
-        next(new BadRequestError('Неверные логин или пароль'));
+        next(new BadRequestError('Невалидные данные'));
       }
-      if (error.code === 11000) {
-        next(
-          new ConflictError('Пользователь с таким email уже зарегистрирован'),
-        );
-      }
-      next(new UnauthorizedError('Ошибка авторизации'));
+      next(new InternalServerError('Ошибка при создании пользователя'));
     });
 };
 
