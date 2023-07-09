@@ -17,7 +17,7 @@ const auth = (req, res, next) => {
       token,
       NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
     );
-  } catch (err) {
+  } catch (error) {
     next(new UnauthorizedError('Необходима авторизация'));
   }
 

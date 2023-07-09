@@ -10,8 +10,8 @@ const NotFoundError = require('../errors/NotFoundError');
 router.post('/signup', validateLogin, createUser);
 router.post('/signin', validateLogin, login);
 router.use(auth);
-router.use('/users', auth, userRouter);
-router.use('/cards', auth, cardRouter);
+router.use('/users', userRouter);
+router.use('/cards', cardRouter);
 
 router.use('*', auth, (req, res, next) => {
   next(new NotFoundError('Неверный URL запроса'));
