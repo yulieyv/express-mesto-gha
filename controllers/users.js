@@ -24,15 +24,14 @@ module.exports.login = (req, res, next) => {
       );
       res
         .cookie(
-          'authotization',
+          'jwt',
           token,
           {
             maxAge: 3600000,
             httpOnly: true,
           },
           { expiresIn: '7d' },
-        )
-        .send({ message: 'Авторизация прошла успешно' });
+        );
     })
     .catch((error) => {
       if (error instanceof mongoose.Error.ValidationError) {
