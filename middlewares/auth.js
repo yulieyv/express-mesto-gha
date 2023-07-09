@@ -7,9 +7,10 @@ const auth = (req, res, next) => {
   const { authorization } = req.headers;
 
   if (!authorization || !authorization.startWith('Bearer ')) {
-    next(new UnauthorizedError('Необходима авторизация'));
+    next(new UnauthorizedError('Токен отсутствует'));
   }
   const token = authorization.replace('Bearer ', '');
+
   let payload;
 
   try {
@@ -22,7 +23,6 @@ const auth = (req, res, next) => {
   }
 
   req.user = payload;
-
   next();
 };
 

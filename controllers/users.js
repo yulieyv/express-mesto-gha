@@ -9,7 +9,6 @@ const { OK_STATUS, CREATED_STATUS } = require('../utils/constants');
 
 const BadRequestError = require('../errors/BadRequestError');
 const NotFoundError = require('../errors/NotFoundError');
-const UnauthorizedError = require('../errors/UnauthorizedError');
 const InternalServerError = require('../errors/InternalServerError');
 const ConflictError = require('../errors/ConflictError');
 
@@ -23,6 +22,7 @@ module.exports.login = (req, res, next) => {
         { expiresIn: '7d' },
       );
       res
+        .status(OK_STATUS)
         .cookie(
           'jwt',
           token,
@@ -30,20 +30,16 @@ module.exports.login = (req, res, next) => {
             maxAge: 3600000,
             httpOnly: true,
           },
-          { expiresIn: '7d' },
-        );
+        )
+        .send({
+          name: user.name,
+          about: user.about,
+          avatar: user.avatar,
+          email: user.email,
+          _id: user._id,
+        });
     })
-    .catch((error) => {
-      if (error instanceof mongoose.Error.ValidationError) {
-        next(new BadRequestError('Неверные логин или пароль'));
-      }
-      if (error.code === 11000) {
-        next(
-          new ConflictError('Пользователь с таким email уже зарегистрирован'),
-        );
-      }
-      next(new UnauthorizedError('Ошибка авторизации'));
-    });
+    .catch(next);
 };
 
 module.exports.createUser = (req, res, next) => {
@@ -73,9 +69,12 @@ module.exports.createUser = (req, res, next) => {
     })
     .catch((error) => {
       if (error instanceof mongoose.Error.ValidationError) {
-        next(new BadRequestError('Невалидные данные'));
-      }
-      next(new InternalServerError('Ошибка при создании пользователя'));
+        next(new BadRequestError('Неверные логин или пароль'));
+      } else if (error.code === 11000) {
+        next(
+          new ConflictError('Пользователь с таким email уже зарегистрирован'),
+        );
+      } else next(error);
     });
 };
 
