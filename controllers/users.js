@@ -22,17 +22,19 @@ module.exports.login = (req, res, next) => {
         NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
         { expiresIn: '7d' },
       );
-      res.send({ token });
+      res
+        .cookie(
+          'authotization',
+          token,
+          {
+            maxAge: 3600000,
+            httpOnly: true,
+          },
+          { expiresIn: '7d' },
+        )
+        .send({ message: 'Авторизация прошла успешно' });
     })
-    .catch((error) => {
-      if (error instanceof mongoose.Error.ValidationError) {
-        next(new BadRequestError('Неверные логин или пароль'));
-      }
-      if (error.code === 11000) {
-        next(
-          new ConflictError('Пользователь с таким email уже зарегистрирован'),
-        );
-      }
+    .catch(() => {
       next(new UnauthorizedError('Ошибка авторизации'));
     });
 };
@@ -64,9 +66,14 @@ module.exports.createUser = (req, res, next) => {
     })
     .catch((error) => {
       if (error instanceof mongoose.Error.ValidationError) {
-        next(new BadRequestError('Невалидные данные'));
+        next(new BadRequestError('Неверные логин или пароль'));
       }
-      next(new InternalServerError('Ошибка при создании пользователя'));
+      if (error.code === 11000) {
+        next(
+          new ConflictError('Пользователь с таким email уже зарегистрирован'),
+        );
+      }
+      next(new UnauthorizedError('Ошибка авторизации'));
     });
 };
 
