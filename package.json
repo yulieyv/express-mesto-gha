@@ -6,8 +6,7 @@
   "scripts": {
     "lint": "npx eslint .",
     "start": "node app.js",
-    "dev": "nodemon app.js",
-    "deploy": "gh-pages -d build"
+    "dev": "nodemon app.js"
   },
   "repository": {
     "type": "git",
@@ -21,8 +20,15 @@
   },
   "homepage": "https://github.com/yulieyv/express-mesto-gha#readme",
   "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "celebrate": "^15.0.1",
+    "cookie-parser": "^1.4.6",
+    "dotenv": "^16.3.1",
     "express": "^4.18.2",
-    "mongoose": "^7.3.1"
+    "joi-objectid": "^4.0.2",
+    "jsonwebtoken": "^9.0.1",
+    "mongoose": "^7.3.1",
+    "validator": "^13.9.0"
   },
   "devDependencies": {
     "eslint": "^8.44.0",
