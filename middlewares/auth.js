@@ -1,12 +1,11 @@
 const jwt = require('jsonwebtoken');
-const { UnauthorizedError } = require('../errors/UnauthorizedError');
+const UnauthorizedError = require('../errors/UnauthorizedError');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
 const auth = (req, res, next) => {
-  const { authorization } = req.headers;
-
-  if (!authorization || !authorization.startWith('Bearer ')) {
+  const authorization = req.cookies.jwt;
+  if (!authorization) {
     next(new UnauthorizedError('Токен отсутствует'));
   }
   const token = authorization.replace('Bearer ', '');
