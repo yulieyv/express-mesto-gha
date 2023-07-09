@@ -36,7 +36,9 @@ module.exports.login = (req, res, next) => {
         next(new BadRequestError('Неверные логин или пароль'));
       }
       if (error.code === 11000) {
-        next(new ConflictError('Пользователь с таким email уже зарегистрирован'));
+        next(
+          new ConflictError('Пользователь с таким email уже зарегистрирован'),
+        );
       }
       next(new UnauthorizedError('Ошибка авторизации'));
     });
@@ -60,7 +62,12 @@ module.exports.createUser = (req, res, next) => {
       password: hash,
     }))
     .then((user) => {
-      res.status(CREATED_STATUS).send(user);
+      res.status(CREATED_STATUS).send({
+        name: user.name,
+        about: user.about,
+        avatar: user.avatar,
+        email: user.email,
+      });
     })
     .catch((error) => {
       if (error instanceof mongoose.Error.ValidationError) {
