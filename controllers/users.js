@@ -1,10 +1,10 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const User = require('../models/user');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
-const User = require('../models/user');
 const { OK_STATUS, CREATED_STATUS } = require('../utils/constants');
 
 const BadRequestError = require('../errors/BadRequestError');
@@ -31,7 +31,7 @@ module.exports.login = (req, res, next) => {
             httpOnly: true,
           },
         )
-        .send({ message: 'Привет, ты тут' });
+        .send({ message: 'Авторизация прошла успешно' });
     })
     .catch(next);
 };
@@ -59,16 +59,14 @@ module.exports.createUser = (req, res, next) => {
         about: user.about,
         avatar: user.avatar,
         email: user.email,
+        _id: user._id,
       });
     })
     .catch((error) => {
       if (error instanceof mongoose.Error.ValidationError) {
         next(new BadRequestError('Неверные логин или пароль'));
-        return;
-      }
-      if (error.code === 11000) {
-        next(new ConflictError('Пользователь с таким email уже зарегистрирован'));
-        return;
+      } else if (error.code === 11000) {
+        next(new ConflictError());
       }
       next(error);
     });
@@ -83,8 +81,10 @@ module.exports.getUsers = (req, res, next) => {
 };
 
 module.exports.getUser = (req, res, next) => {
+  console.log({ _id: req.params.userId });
   User.findById({ _id: req.params.userId })
     .then((user) => {
+      console.log('Я здесь');
       if (!user) {
         throw new NotFoundError('Id пользователя не найден');
       }
@@ -130,7 +130,8 @@ module.exports.updateAvatar = (req, res, next) => {
 };
 
 module.exports.getUserInfo = (req, res, next) => {
-  User.findById(req.params._id)
+  console.log(req.user._id);
+  User.findById(req.user._id)
     .then((user) => {
       if (!user) {
         throw new NotFoundError('Информация о пользователе не найдена');
