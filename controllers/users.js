@@ -66,7 +66,7 @@ module.exports.createUser = (req, res, next) => {
       if (error instanceof mongoose.Error.ValidationError) {
         next(new BadRequestError('Неверные логин или пароль'));
       } else if (error.code === 11000) {
-        next(new ConflictError());
+        next(new ConflictError('Пользователь с таким email уже зарегистрирован'));
       }
       next(error);
     });
@@ -81,7 +81,6 @@ module.exports.getUsers = (req, res, next) => {
 };
 
 module.exports.getUser = (req, res, next) => {
-  console.log({ _id: req.params.userId });
   User.findById({ _id: req.params.userId })
     .then((user) => {
       console.log('Я здесь');
