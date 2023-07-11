@@ -5,14 +5,13 @@ const { NODE_ENV, JWT_SECRET } = process.env;
 
 const auth = (req, res, next) => {
   let token = '';
-  if (req.headers.cookie || req.headers.cookie.startsWith('jwt')) {
+  if (req.headers.cookie && req.headers.cookie.startsWith('jwt')) {
     token = req.headers.cookie.replace('jwt=', '');
-  } else if (!req.headers.authorization || !req.headers.authorization.startsWith('Bearer ')) {
-    next(new UnauthorizedError('Токен отсутствует'));
-  } else token = req.headers.authorization.replace('Bearer ', '');
+  } else if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+    token = req.headers.authorization.replace('Bearer ', '');
+  } else next(new UnauthorizedError('Токен отсутствует'));
 
   let payload;
-
   try {
     payload = jwt.verify(
       token,
