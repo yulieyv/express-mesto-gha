@@ -5,13 +5,16 @@ const { OK_STATUS, CREATED_STATUS } = require('../utils/constants');
 const BadRequestError = require('../errors/BadRequestError');
 const NotFoundError = require('../errors/NotFoundError');
 const InternalServerError = require('../errors/InternalServerError');
+const ForbiddenError = require('../errors/ForbiddenError');
 
 module.exports.getCards = (req, res, next) => {
   Card.find({})
     .then((cards) => {
       res.status(OK_STATUS).send(cards);
     })
-    .catch(next(new InternalServerError('Список карточек не получен')));
+    .catch(() => {
+      next(new InternalServerError('Список карточек не получен'));
+    });
 };
 
 module.exports.createCard = (req, res, next) => {
@@ -30,12 +33,22 @@ module.exports.createCard = (req, res, next) => {
 };
 
 module.exports.deleteCard = (req, res, next) => {
-  Card.findOneAndDelete({ _id: req.params.cardId })
+  const owner = req.user._id;
+
+  Card.findById({ _id: req.params.cardId })
     .then((card) => {
       if (!card) {
-        throw new NotFoundError('Карточка не найдена');
+        throw new NotFoundError('Карточка не найдена.');
       }
-      return res
+      if (card.owner.toString() !== owner) {
+        throw new ForbiddenError('Вы не можете удалить эту карточку');
+      }
+
+      // уже можно удалить карточку
+      return Card.findByIdAndRemove(req.params.cardId);
+    })
+    .then(() => {
+      res
         .status(OK_STATUS)
         .send({ message: 'Карточка с указанным ID удалена' });
     })
