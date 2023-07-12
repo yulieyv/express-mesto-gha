@@ -1,4 +1,5 @@
 const { celebrate, Joi } = require('celebrate');
+Joi.objectId = require('joi-objectid')(Joi);
 const { regexAvatar, regexLink } = require('../utils/constants');
 
 module.exports.validateLogin = celebrate({
@@ -13,7 +14,7 @@ module.exports.validateLogin = celebrate({
 
 module.exports.validateUserId = celebrate({
   body: Joi.object().keys({
-    userId: Joi.string().hex().required().length(24),
+    userId: Joi.objectId(),
   }),
 });
 
@@ -39,6 +40,6 @@ module.exports.validateCreateCard = celebrate({
 
 module.exports.validateCardId = celebrate({
   body: Joi.object().keys({
-    cardId: Joi.string().hex().required().length(24),
+    cardId: Joi.objectId(),
   }),
 });

@@ -34,31 +34,20 @@ module.exports.createCard = (req, res, next) => {
 
 module.exports.deleteCard = (req, res, next) => {
   const owner = req.user._id;
-
   Card.findById({ _id: req.params.cardId })
+    .orFail(() => new NotFoundError('Карточка не найдена'))
     .then((card) => {
-      if (!card) {
-        throw new NotFoundError('Карточка не найдена.');
-      }
       if (card.owner.toString() !== owner) {
         throw new ForbiddenError('Вы не можете удалить эту карточку');
-      }
-
-      // уже можно удалить карточку
-      return Card.findByIdAndRemove(req.params.cardId);
-    })
-    .then(() => {
-      res
-        .status(OK_STATUS)
-        .send({ message: 'Карточка с указанным ID удалена' });
-    })
-    .catch((error) => {
-      if (error instanceof mongoose.Error.CastError) {
-        next(new BadRequestError('Некорректный ID карточки'));
       } else {
-        next(new InternalServerError('Ошибка при удалении карточки'));
+        Card.findByIdAndDelete({ _id: req.params.cardId }).then(() => {
+          res
+            .status(OK_STATUS)
+            .send({ message: 'Карточка с указанным ID удалена' });
+        });
       }
-    });
+    })
+    .catch(next);
 };
 
 module.exports.likeCard = (req, res, next) => {
