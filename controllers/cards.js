@@ -38,13 +38,14 @@ module.exports.deleteCard = (req, res, next) => {
     .then((card) => {
       if (!card) {
         throw new NotFoundError('Карточка не найдена');
-      } else if (card.owner.toString() !== owner) {
+      }
+      if (card.owner.toString() !== owner) {
         throw new ForbiddenError('Вы не можете удалить эту карточку');
       }
       return Card.findByIdAndDelete({ _id: req.params.cardId })
         .then(
           (deletedCard) => {
-            res.status(OK_STATUS).send({ data: deletedCard });
+            res.status(OK_STATUS).send(deletedCard);
           },
         );
     })
@@ -67,7 +68,7 @@ module.exports.likeCard = (req, res, next) => {
       if (!card) {
         throw new NotFoundError('Карточка с указанным ID не найдена');
       }
-      return res.status(OK_STATUS).send({ message: 'Лайк добавлен' });
+      return res.status(OK_STATUS).send(card);
     })
     .catch(next);
 };
@@ -82,7 +83,7 @@ module.exports.dislikeCard = (req, res, next) => {
       if (!card) {
         throw new NotFoundError('Карточка с указанным ID не найдена');
       }
-      return res.status(OK_STATUS).send({ message: 'Лайк удалён' });
+      return res.status(OK_STATUS).send(card);
     })
     .catch(next);
 };

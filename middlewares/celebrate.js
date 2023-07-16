@@ -12,7 +12,7 @@ module.exports.validateLogin = celebrate({
 });
 
 module.exports.validateUserId = celebrate({
-  body: Joi.object().keys({
+  params: Joi.object().keys({
     userId: Joi.string().hex().length(24),
   }),
 });
@@ -38,7 +38,7 @@ module.exports.validateCreateCard = celebrate({
 });
 
 module.exports.validateCardId = celebrate({
-  body: Joi.object().keys({
+  params: Joi.object().keys({
     cardId: Joi.string().hex().length(24),
   }),
 });
