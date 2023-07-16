@@ -23,14 +23,10 @@ module.exports.login = (req, res, next) => {
       );
       res
         .status(OK_STATUS)
-        .cookie(
-          'jwt',
-          token,
-          {
-            maxAge: 3600000,
-            httpOnly: true,
-          },
-        )
+        .cookie('jwt', token, {
+          maxAge: 3600000,
+          httpOnly: true,
+        })
         .send({ message: 'Авторизация прошла успешно' });
     })
     .catch(next);
@@ -67,8 +63,7 @@ module.exports.createUser = (req, res, next) => {
         next(new BadRequestError('Неверные логин или пароль'));
       } else if (error.code === 11000) {
         next(new ConflictError('Пользователь с таким email уже зарегистрирован'));
-      }
-      next(error);
+      } next(error);
     });
 };
 
@@ -88,13 +83,7 @@ module.exports.getUser = (req, res, next) => {
       }
       res.status(OK_STATUS).send(user);
     })
-    .catch((error) => {
-      if (error instanceof mongoose.Error.CastError) {
-        next(new BadRequestError('Некорректный ID'));
-      } else {
-        next(new InternalServerError('Ошибка получения данных пользователя'));
-      }
-    });
+    .catch(next);
 };
 
 const updateUserData = (req, res, next, config = {}) => {

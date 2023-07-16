@@ -37,17 +37,15 @@ module.exports.deleteCard = (req, res, next) => {
   Card.findById({ _id: req.params.cardId })
     .then((card) => {
       if (!card) {
-        throw new NotFoundError('Карточка не найдена');
+        return next(new NotFoundError('Карточка не найдена'));
       }
       if (card.owner.toString() !== owner) {
         throw new ForbiddenError('Вы не можете удалить эту карточку');
       }
       return Card.findByIdAndDelete({ _id: req.params.cardId })
-        .then(
-          (deletedCard) => {
-            res.status(OK_STATUS).send(deletedCard);
-          },
-        );
+        .then((deletedCard) => {
+          res.status(OK_STATUS).send(deletedCard);
+        });
     })
     .catch((error) => {
       if (error instanceof mongoose.Error.CastError) {
