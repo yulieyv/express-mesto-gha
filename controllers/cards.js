@@ -10,11 +10,12 @@ const ForbiddenError = require('../errors/ForbiddenError');
 module.exports.getCards = (req, res, next) => {
   Card.find({})
     .then((cards) => {
-      res.status(OK_STATUS).send(cards);
+      if (!cards) {
+        return next(new NotFoundError('Нет ни одной карточки'));
+      }
+      return res.status(OK_STATUS).send(cards);
     })
-    .catch(() => {
-      next(new InternalServerError('Список карточек не получен'));
-    });
+    .catch(next);
 };
 
 module.exports.createCard = (req, res, next) => {
@@ -26,9 +27,9 @@ module.exports.createCard = (req, res, next) => {
     })
     .catch((error) => {
       if (error instanceof mongoose.Error.ValidationError) {
-        next(new BadRequestError('Невалидные данные'));
+        return next(new BadRequestError('Невалидные данные'));
       }
-      next(new InternalServerError('Ошибка при создании карточки'));
+      return next(new InternalServerError('Ошибка при создании карточки'));
     });
 };
 
@@ -42,7 +43,7 @@ module.exports.deleteCard = (req, res, next) => {
       if (card.owner.toString() !== owner) {
         return next(new ForbiddenError('Вы не можете удалить эту карточку'));
       }
-      return Card.findByIdAndDelete({ _id: req.params.cardId })
+      return Card.deleteOne({ _id: req.params.cardId })
         .then((deletedCard) => {
           res.status(OK_STATUS).send(deletedCard);
         });

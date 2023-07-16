@@ -60,10 +60,11 @@ module.exports.createUser = (req, res, next) => {
     })
     .catch((error) => {
       if (error instanceof mongoose.Error.ValidationError) {
-        next(new BadRequestError('Неверные логин или пароль'));
-      } else if (error.code === 11000) {
-        next(new ConflictError('Пользователь с таким email уже зарегистрирован'));
-      } next(error);
+        return next(new BadRequestError('Неверные логин или пароль'));
+      }
+      if (error.code === 11000) {
+        return next(new ConflictError('Пользователь с таким email уже зарегистрирован'));
+      } return next(error);
     });
 };
 
@@ -96,9 +97,9 @@ const updateUserData = (req, res, next, config = {}) => {
     })
     .catch((error) => {
       if (error instanceof mongoose.Error.ValidationError) {
-        next(new BadRequestError('Невалидные данные'));
+        return next(new BadRequestError('Невалидные данные'));
       }
-      next(new InternalServerError('Ошибка обновления профиля'));
+      return next(new InternalServerError('Ошибка обновления профиля'));
     });
 };
 
@@ -120,10 +121,10 @@ module.exports.getUserInfo = (req, res, next) => {
   console.log(req.user._id);
   User.findById(req.user._id)
     .then((user) => {
-      if (user == null) {
-        next(new NotFoundError('Информация о пользователе не найдена'));
+      if (!user) {
+        return next(new NotFoundError('Информация о пользователе не найдена'));
       }
-      res.status(OK_STATUS).send(user);
+      return res.status(OK_STATUS).send(user);
     })
     .catch(next);
 };

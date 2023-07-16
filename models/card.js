@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { regexLink } = require('../utils/constants');
 
 const cardSchema = new mongoose.Schema({
   name: {
@@ -11,6 +12,10 @@ const cardSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
+    validate: {
+      validator: (v) => regexLink.test(v),
+      message: 'Неверный формат URL',
+    },
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
