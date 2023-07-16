@@ -35,19 +35,26 @@ module.exports.createCard = (req, res, next) => {
 module.exports.deleteCard = (req, res, next) => {
   const owner = req.user._id;
   Card.findById({ _id: req.params.cardId })
-    .orFail(() => new NotFoundError('Карточка не найдена'))
     .then((card) => {
-      if (card.owner.toString() !== owner) {
+      if (!card) {
+        throw new NotFoundError('Карточка не найдена');
+      } else if (card.owner.toString() !== owner) {
         throw new ForbiddenError('Вы не можете удалить эту карточку');
-      } else {
-        Card.findByIdAndDelete({ _id: req.params.cardId }).then(() => {
-          res
-            .status(OK_STATUS)
-            .send({ message: 'Карточка с указанным ID удалена' });
-        });
       }
+      return Card.findByIdAndDelete({ _id: req.params.cardId })
+        .then(
+          (deletedCard) => {
+            res.status(OK_STATUS).send({ data: deletedCard });
+          },
+        );
     })
-    .catch(next);
+    .catch((error) => {
+      if (error instanceof mongoose.Error.CastError) {
+        next(new BadRequestError('Некорректный ID карточки'));
+      } else {
+        next(new InternalServerError('Ошибка при удалении карточки'));
+      }
+    });
 };
 
 module.exports.likeCard = (req, res, next) => {
@@ -62,13 +69,7 @@ module.exports.likeCard = (req, res, next) => {
       }
       return res.status(OK_STATUS).send({ message: 'Лайк добавлен' });
     })
-    .catch((error) => {
-      if (error instanceof mongoose.Error.CastError) {
-        next(new BadRequestError('Некорректный ID карточки'));
-      } else {
-        next(new InternalServerError('Ошибка при постановке лайка карточке'));
-      }
-    });
+    .catch(next);
 };
 
 module.exports.dislikeCard = (req, res, next) => {
@@ -83,11 +84,5 @@ module.exports.dislikeCard = (req, res, next) => {
       }
       return res.status(OK_STATUS).send({ message: 'Лайк удалён' });
     })
-    .catch((error) => {
-      if (error instanceof mongoose.Error.CastError) {
-        next(new BadRequestError('Некорректный ID карточки'));
-      } else {
-        next(new InternalServerError('Ошибка при удалении лайка'));
-      }
-    });
+    .catch(next);
 };
