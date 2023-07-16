@@ -40,20 +40,14 @@ module.exports.deleteCard = (req, res, next) => {
         return next(new NotFoundError('Карточка не найдена'));
       }
       if (card.owner.toString() !== owner) {
-        throw new ForbiddenError('Вы не можете удалить эту карточку');
+        return next(new ForbiddenError('Вы не можете удалить эту карточку'));
       }
       return Card.findByIdAndDelete({ _id: req.params.cardId })
         .then((deletedCard) => {
           res.status(OK_STATUS).send(deletedCard);
         });
     })
-    .catch((error) => {
-      if (error instanceof mongoose.Error.CastError) {
-        next(new BadRequestError('Некорректный ID карточки'));
-      } else {
-        next(new InternalServerError('Ошибка при удалении карточки'));
-      }
-    });
+    .catch(next);
 };
 
 module.exports.likeCard = (req, res, next) => {
