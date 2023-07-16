@@ -11,13 +11,12 @@ const auth = (req, res, next) => {
   let payload;
   try {
     payload = jwt.verify(
-      req.headers.cookie.replace('token=', ''),
+      req.headers.cookie.replace('jwt=', ''),
       NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
     );
   } catch (error) {
     return next(new UnauthorizedError('Необходима авторизация'));
   }
-
   req.user = payload;
   return next();
 };
